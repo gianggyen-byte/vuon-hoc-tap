@@ -1,1 +1,124 @@
 
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>Kiểm tra Gemini AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef3ff;
+      padding: 25px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 40px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px #0001;
+    }
+    h2 { color: #305fdd; }
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #305fdd;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    #result {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f5f7ff;
+      border-radius: 8px;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Kiểm tra Gemini AI</h2>
+  <p>Nhập câu hỏi để kiểm tra kết nối.</p>
+
+  <textarea id="question" maxlength="10000"
+    placeholder="Nhập câu hỏi toán học...">Giải phương trình 2x + 5 = 15</textarea>
+
+  <button id="send" onclick="askAI()">
+    Gửi cho Gemini
+  </button>
+
+  <h3>Kết quả:</h3>
+  <div id="result">Chưa gửi câu hỏi.</div>
+</div>
+
+<script>
+async function askAI() {
+  const question =
+    document.getElementById("question").value.trim();
+  const result = document.getElementById("result");
+  const button = document.getElementById("send");
+
+  if (!question) {
+    result.textContent = "Vui lòng nhập câu hỏi.";
+    return;
+  }
+
+  button.disabled = true;
+  result.textContent = "Đang gửi câu hỏi...";
+
+  try {
+    const response = await fetch(
+      "/.netlify/functions/gemini",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ question })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      result.textContent =
+        "HTTP " + response.status + ": " +
+        (data.error || "Không rõ lỗi.");
+      return;
+    }
+
+    result.textContent =
+      data.answer || "Không có câu trả lời.";
+
+  } catch (error) {
+    result.textContent =
+      "Lỗi kết nối: " + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
+
